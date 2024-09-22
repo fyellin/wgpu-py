@@ -111,13 +111,14 @@ class Runner:
         }
 
     def run_code(self, data, offset, count_data, count_buffer_offset, max_count):
-        # create_buffer_with_data is a convenience function that creates the buffer
-        # "mapped_at_creation", copies the data to it, and then unmaps it.
+        def int_list_to_byte_array(data):
+            return struct.pack(f"{len(data)}I", *data)
+
         buffer = self.device.create_buffer_with_data(
-            data=struct.pack("i" * len(data), *data), usage="INDIRECT"
+            data=int_list_to_byte_array(data), usage="INDIRECT"
         )
         count_buffer = self.device.create_buffer_with_data(
-            data=struct.pack("i" * len(data), *data), usage="INDIRECT"
+            data=int_list_to_byte_array(count_data), usage="INDIRECT"
         )
 
         results = []
@@ -176,8 +177,6 @@ def main():
     runner.run_code([3, 0, 2, 2, 1, 2, 0, 2, 2, 3, 4, 0, 2, 2, 5, 6, 0], 8, [0], 0, 3)
     runner.run_code([3, 0, 2, 2, 1, 2, 0, 2, 2, 3, 4, 0, 2, 2, 5, 6, 0], 8, [0], 0, 2)
     runner.run_code([2, 0, 2, 2, 1, 2, 0, 2, 2, 3, 4, 0, 2, 2, 5, 6, 0], 8, [0], 0, 3)
-
-    runner.run_code([2, 0, 2, 2, 1, 2, 0, 2, 2, 3], 8, [0], 0, 2)
 
 
 if __name__ == "__main__":
