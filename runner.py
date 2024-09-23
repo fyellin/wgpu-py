@@ -58,11 +58,12 @@ class Runner:
         "indirect-first-instance",  # first-instance can be non-zero
         "vertex-writable-storage",  # write to a buffer in vertex shader
         "multi-draw-indirect",  # can call multiDrawIndirect
-        *(["multi-draw-indirect-count"] if not MAC_OS else []),
+        "multi-draw-indirect-count",
     ]
 
     def __init__(self):
         adapter = wgpu.gpu.request_adapter(power_preference="high-performance")
+        print(adapter.info)
         self.device = adapter.request_device(required_features=self.REQUIRED_FEATURES)
 
         self.output_texture = self.device.create_texture(
@@ -76,10 +77,12 @@ class Runner:
             layout="auto",
             vertex={
                 "module": shader,
+                "entry_point": "vertex",
             },
             fragment={
                 "module": shader,
                 "targets": [{"format": self.output_texture.format}],
+                "entry_point": "fragment",
             },
             primitive={
                 "topology": "point-list",
@@ -132,7 +135,7 @@ class Runner:
                 api.libf.wgpuRenderPassEncoderMultiDrawIndirect(
                     this_pass._internal, buffer._internal, int(offset), int(max_count)
                 )
-            elif platform.system() != "Darwin":
+            else:
                 api.libf.wgpuRenderPassEncoderMultiDrawIndirectCount(
                     this_pass._internal,
                     buffer._internal,
